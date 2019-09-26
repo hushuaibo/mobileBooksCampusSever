@@ -13,9 +13,5 @@ app.use(express.static('public'));
 //路由匹配
 app.use('/admin',admin);
 
-app.get('/upload/:url',(req,res)=>{
-    res.render('/upload/'+req.params.url);
-});
-
 //端口监听
 app.listen('4001','127.0.0.1');

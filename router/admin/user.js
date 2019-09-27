@@ -109,7 +109,10 @@ router.post('/userEdit',upload.single('picture'),(req,res)=>{
     const AGE = req.body.age;
     const GENDER = req.body.gender;
     const BIRTHDAY = req.body.birthday;
-    const PICTURE = 'http://' + req.headers.host + '/upload/' + req.file.filename;
+    let PICTURE;
+    if(req.file){
+        PICTURE = 'http://' + req.headers.host + '/upload/' + req.file.filename;
+    }
     const HOMETOWN = req.body.hometown;
     const PHONE = req.body.phone;
     const QQ = req.body.qq;
@@ -123,14 +126,40 @@ router.post('/userEdit',upload.single('picture'),(req,res)=>{
             });
         }
         const filepath = './public/upload/' + user[0].Picture.split('/')[user[0].Picture.split('/').length-1];
-        console.log(filepath);
-        fs.unlink(filepath, function(err){
-            if(err){
-                res.send({
-                    code : 0 ,
-                    msg : '修改失败'
-                });
-            }
+        if(req.file){
+            fs.unlink(filepath, function(err){
+                if(err){
+                    res.send({
+                        code : 0 ,
+                        msg : '修改失败'
+                    });
+                }
+                DB.update('user',{
+                    UserId : USERID
+                },{
+                    UserName : USERNAME,
+                    PassWorld : PASSWORLD,
+                    Age : AGE,
+                    Gender : GENDER,
+                    Birthday : BIRTHDAY,
+                    Picture:PICTURE,
+                    Hometown : HOMETOWN,
+                    Phone : PHONE,
+                    QQ : QQ
+                },(err)=>{
+                    if(err){
+                        res.send({
+                            code:0,
+                            msg:'修改失败'
+                        });
+                    }
+                    res.send({
+                        code:1,
+                        msg:'修改成功'
+                    });
+                })
+            })
+        }else{
             DB.update('user',{
                 UserId : USERID
             },{
@@ -139,7 +168,6 @@ router.post('/userEdit',upload.single('picture'),(req,res)=>{
                 Age : AGE,
                 Gender : GENDER,
                 Birthday : BIRTHDAY,
-                Picture:PICTURE,
                 Hometown : HOMETOWN,
                 Phone : PHONE,
                 QQ : QQ
@@ -155,6 +183,24 @@ router.post('/userEdit',upload.single('picture'),(req,res)=>{
                     msg:'修改成功'
                 });
             })
+        }
+    })
+});
+//查看单个用户信息
+router.get('/userContent',(req,res)=>{
+    const ID = parseInt(req.query.userId);
+    DB.find('user',{
+        UserId : ID
+    },(err,user)=>{
+        if(err){
+            res.send({
+                code : 0 ,
+                msg : '获取失败'
+            });
+        }
+        res.send({
+            code : 1,
+            user : user[0]
         })
     })
 });
